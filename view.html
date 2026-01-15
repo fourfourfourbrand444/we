@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Submission | Artist Portal</title>
+<link rel="stylesheet" href="view.css">
+</head>
+<body>
+
+<header>
+  <h1>Artist Portal</h1>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="submit.html">Submit New</a>
+    <a href="login.html" id="logout">Logout</a>
+  </nav>
+</header>
+
+<div class="container">
+  <h2>Submission Details</h2>
+  <div id="details">
+    <p>Loading...</p>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+document.getElementById("logout").addEventListener("click", async () => {
+  await signOut(auth);
+  window.location = "login.html";
+});
+
+// Get submission ID from URL: view-submission.html?id=SUBMISSION_ID
+const params = new URLSearchParams(window.location.search);
+const submissionId = params.get("id");
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location = "login.html";
+    return;
+  }
+
+  if (!submissionId) {
+    document.getElementById("details").innerHTML = "<p>No submission ID provided.</p>";
+    return;
+  }
+
+  const docRef = doc(db, "submissions", submissionId);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists() && docSnap.data().userId === user.uid) {
+    const data = docSnap.data();
+    const detailsDiv = document.getElementById("details");
+    detailsDiv.innerHTML = "";
+    for (const key in data) {
+      if (key !== "userId") {
+        const p = document.createElement("p");
+        p.className = "detail";
+        p.innerHTML = <strong>${key}:</strong> ${data[key]};
+        detailsDiv.appendChild(p);
+      }
+    }
+  } else {
+    document.getElementById("details").innerHTML = "<p>Submission not found or access denied.</p>";
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+ body {
+    font-family: 'Arial', sans-serif;
+    background: #111;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    text-align: center;
+  }
+  h2 {
+    color: #00ffcc;
+    font-size: 22px;
+    margin: 0 20px;
+  }

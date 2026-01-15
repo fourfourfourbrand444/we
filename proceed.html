@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Processing Submission...</title>
+<link rel="stylesheet" href="proceed.css">
+</head>
+<body>
+<h2>Saving your submission… Please wait</h2>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBzUD7avh7vJfeSMRl2o9F09_qd-pl0dSg",
+  authDomain: "usersubmissionsportal.firebaseapp.com",
+  projectId: "usersubmissionsportal",
+  storageBucket: "usersubmissionsportal.firebasestorage.app",
+  messagingSenderId: "734783502459",
+  appId: "1:734783502459:web:cfa2cc5de6976003b24ade",
+  measurementId: "G-WCRN117P8P"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    alert("Please login first.");
+    window.location = "login.html";
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  let data = {};
+  for (const [key, value] of params.entries()) { data[key] = value; }
+
+  data.userId = user.uid;
+  data.email = user.email;
+  data.status = "Pending";
+  data.createdAt = serverTimestamp();
+
+  await addDoc(collection(db, "submissions"), data);
+
+  window.location = "dashboard.html";
+});
+</script>
+</body>
+</html>
