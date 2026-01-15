@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Processing Submission...</title>
+<link rel="stylesheet" href="aftter-submittion.css">
+</head>
+<body>
+<h2>Saving your submission… Please wait</h2>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
+// 🔑 Replace these with your Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyBzUD7avh7vJfeSMRl2o9F09_qd-pl0dSg",
+  authDomain: "usersubmissionsportal.firebaseapp.com",
+  projectId: "usersubmissionsportal",
+  storageBucket: "usersubmissionsportal.firebasestorage.app",
+  messagingSenderId: "734783502459",
+  appId: "1:734783502459:web:cfa2cc5de6976003b24ade",
+  measurementId: "G-WCRN117P8P"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    alert("Please login first.");
+    window.location = "login.html";
+    return;
+  }
+
+  // Get form data from URL query string
+  const params = new URLSearchParams(window.location.search);
+  let data = {};
+  for (const [key, value] of params.entries()) {
+    data[key] = value;
+  }
+
+  // ✅ Only save if title is filled
+  if (!data.title || data.title.trim() === "") {
+    alert("Submission is empty! Please fill the form.");
+    window.location = "submit.html";
+    return;
+  }
+
+  // Add user info
+  data.userId = user.uid;
+  data.email = user.email;
+  data.status = "Pending";
+  data.createdAt = serverTimestamp();
+
+  try {
+    await addDoc(collection(db, "submissions"), data);
+    // Redirect to dashboard after saving
+    window.location = "dashboard.html";
+  } catch (e) {
+    alert("Error saving submission: " + e.message);
+  }
+});
+</script>
+</body>
+</html>
